@@ -6,6 +6,9 @@ from datacenter.models import (
                                )
 
 
+COMMENDATION_TEXT = ['Так держать!', 'Уже лучше!', 'Замечательно!', 'Талантливо!']
+
+
 def find_schoolkid(child_name):
     try:
         schoolkid = Schoolkid.objects.get(full_name__contains=child_name)
@@ -16,6 +19,16 @@ def find_schoolkid(child_name):
     except Schoolkid.DoesNotExist:
         print(f'Ученик "{child_name}" не найден')
         return None
+
+
+def find_lesson(subject_title, child_name):
+    schoolkid = find_schoolkid(child_name)
+    lesson = random.choice(Lesson.objects.filter(
+                                        subject__title=subject_title,
+                                        year_of_study=schoolkid.year_of_study,
+                                        group_letter=schoolkid.group_letter
+                                        ))
+    return lesson
 
 
 def fix_marks(child_name):
@@ -40,19 +53,11 @@ def remove_chastisements(child_name):
 
 def create_commendation(child_name, subject_title):
     schoolkid = find_schoolkid(child_name)
+    lesson = find_lesson(subject_title)
     if schoolkid:
-        try:
-            lesson = random.choice(Lesson.objects.filter(
-                                        subject__title=subject_title,
-                                        year_of_study=schoolkid.year_of_study,
-                                        group_letter=schoolkid.group_letter
-                                        ))
-            commendation_text = ['Так держать!', 'Уже лучше!', 'Замечательно!', 'Талантливо!']  
-            Commendation.objects.create(
-                text=random.choice(commendation_text),
-                created=lesson.date, schoolkid=schoolkid,
-                subject=lesson.subject, teacher=lesson.teacher
-                )
-            print('Добавлена новая запись!')
-        except Lesson.DoesNotExist:
-            print('Урок не найден, введите верное название предмета')
+        Commendation.objects.create(
+            text=random.choice(COMMENDATION_TEXT),
+            created=lesson.date, schoolkid=schoolkid,
+            subject=lesson.subject, teacher=lesson.teacher
+            )
+        print('Добавлена новая похвала!')
