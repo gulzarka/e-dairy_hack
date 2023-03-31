@@ -23,11 +23,10 @@ def find_schoolkid(child_name):
 
 def find_lesson(subject_title, child_name):
     schoolkid = find_schoolkid(child_name)
-    lesson = random.choice(Lesson.objects.filter(
-                                        subject__title=subject_title,
-                                        year_of_study=schoolkid.year_of_study,
-                                        group_letter=schoolkid.group_letter
-                                        ))
+    lesson = (Lesson.objects.filter(subject__title=subject_title,
+                                    year_of_study=schoolkid.year_of_study,
+                                    group_letter=schoolkid.group_letter
+                                    )).order_by('date').first()                               
     return lesson
 
 
@@ -54,7 +53,7 @@ def remove_chastisements(child_name):
 def create_commendation(child_name, subject_title):
     schoolkid = find_schoolkid(child_name)
     lesson = find_lesson(subject_title)
-    if schoolkid:
+    if schoolkid and lesson:
         Commendation.objects.create(
             text=random.choice(COMMENDATION_TEXT),
             created=lesson.date, schoolkid=schoolkid,
